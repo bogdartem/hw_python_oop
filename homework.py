@@ -7,8 +7,7 @@ class InfoMessage:
             duration: float,
             distance: float,
             speed: float,
-            calories: float
-            ) -> None:
+            calories: float) -> None:
         self.training_type = training_type
         self.duration = duration
         self.distance = distance
@@ -90,8 +89,7 @@ class Running(Training):
              * self.get_mean_speed()
              + self.CALORIES_MEAN_SPEED_SHIFT)
             * self.weight / self.M_IN_KM
-            * self.duration * self.H_IN_MIN
-            )
+            * self.duration * self.H_IN_MIN)
 
 
 class SportsWalking(Training):
@@ -135,8 +133,7 @@ class Swimming(Training):
                  duration: float,
                  weight: float,
                  length_pool: float,
-                 count_pool: float
-                 ):
+                 count_pool: float):
         super().__init__(action, duration, weight)
         self.length_pool = length_pool
         self.count_pool = count_pool
@@ -163,7 +160,7 @@ def read_package(workout_type: str, data: list) -> Training:
         'SWM': Swimming,
         'RUN': Running,
         'WLK': SportsWalking
-        }
+    }
 
     return workout_dict[workout_type](*data)
 
