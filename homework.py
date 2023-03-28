@@ -1,4 +1,5 @@
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
+from typing import List
 
 
 @dataclass
@@ -12,10 +13,10 @@ class InfoMessage:
     calories: float
     MESSAGE: str = (
         'Тип тренировки: {training_type}; '
-        'Длительность: {duration:.3} ч.; '
-        'Дистанция: {distance:.3} км; '
-        'Ср. скорость: {speed:.3} км/ч; '
-        'Потрачено ккал: {calories:.3}.'
+        'Длительность: {duration:.3f} ч.; '
+        'Дистанция: {distance:.3f} км; '
+        'Ср. скорость: {speed:.3f} км/ч; '
+        'Потрачено ккал: {calories:.3f}.'
     )
 
     def get_message(self) -> str:
@@ -49,11 +50,11 @@ class Training:
 
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий."""
-        pass
+        raise NotImplementedError('Не переопределена ф-я в дочернем классе.')
 
     def show_training_info(self) -> InfoMessage:
         """Вернуть информационное сообщение о выполненной тренировке."""
-        return InfoMessage(self.__class__.__name__,
+        return InfoMessage(type(self).__name__,
                            self.duration,
                            self.get_distance(),
                            self.get_mean_speed(),
@@ -82,10 +83,10 @@ class Running(Training):
 class SportsWalking(Training):
     """Тренировка: спортивная ходьба."""
 
-    KOEF_CAL_WALKING_1 = 0.035
-    KOEF_CAL_WALKING_2 = 0.029
-    HEIGH_IN_M = 100.0
-    KMH_IN_MS = round(1000 / 3600, 3)
+    CALORIES_MEAN_SPEED_MULTIPLIER_1 = 0.035
+    CALORIES_MEAN_SPEED_MULTIPLIER_2 = 0.029
+    HEIGHT_IN_M = 100.0
+    KMH_IN_MS = 0.278  # * 1000m / 60min / 60sec = 0.27(7)
 
     def __init__(self,
                  action: int,
@@ -100,12 +101,12 @@ class SportsWalking(Training):
         """Расчёт затраченных каллорий при спортивной ходьбе."""
         return (
             (
-                self.KOEF_CAL_WALKING_1 * self.weight +
-                (
+                self.CALORIES_MEAN_SPEED_MULTIPLIER_1 * self.weight
+                + (
                     (self.get_mean_speed() * self.KMH_IN_MS)**2
-                    / (self.height / self.HEIGH_IN_M)
+                    / (self.height / self.HEIGHT_IN_M)
                 )
-                * self.KOEF_CAL_WALKING_2
+                * self.CALORIES_MEAN_SPEED_MULTIPLIER_2
                 * self.weight
             )
             * self.duration * self.H_IN_MIN
@@ -115,9 +116,9 @@ class SportsWalking(Training):
 class Swimming(Training):
     """Тренировка: плавание."""
 
-    LEN_STEPpyte = 1.38
-    KOEF_CALORIES_1 = 1.1
-    KOEF_CALORIES_2 = 2.0
+    LEN_STEP = 1.38
+    CALORIES_MEAN_SPEED_SHIFT = 1.1
+    CALORIES_MEAN_SPEED_MULTIPLIER = 2.0
 
     def __init__(self,
                  action: int,
@@ -143,15 +144,15 @@ class Swimming(Training):
         return (
             (
                 self.get_mean_speed()
-                + self.KOEF_CALORIES_1
+                + self.CALORIES_MEAN_SPEED_SHIFT
             )
-            * self.KOEF_CALORIES_2
+            * self.CALORIES_MEAN_SPEED_MULTIPLIER
             * self.weight
             * self.duration
         )
 
 
-def read_package(workout_type: str, data: list) -> Training:
+def read_package(workout_type: str, data: List[float]) -> Training:
     """Прочитать полученные от датчиков данные."""
 
     workout_dict = {
