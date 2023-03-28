@@ -1,5 +1,5 @@
 from dataclasses import asdict, dataclass
-from typing import List
+from typing import Dict, List, Type
 
 
 @dataclass
@@ -20,7 +20,7 @@ class InfoMessage:
     )
 
     def get_message(self) -> str:
-        """Функция возврата сообщения."""
+        """Получить информационное сообщение."""
         return self.MESSAGE.format(**asdict(self))
 
 
@@ -42,7 +42,7 @@ class Training:
 
     def get_distance(self) -> float:
         """Получить дистанцию в км."""
-        return (self.action * self.LEN_STEP / self.M_IN_KM)
+        return self.action * self.LEN_STEP / self.M_IN_KM
 
     def get_mean_speed(self) -> float:
         """Получить среднюю скорость движения."""
@@ -83,8 +83,8 @@ class Running(Training):
 class SportsWalking(Training):
     """Тренировка: спортивная ходьба."""
 
-    CALORIES_MEAN_SPEED_MULTIPLIER_1 = 0.035
-    CALORIES_MEAN_SPEED_MULTIPLIER_2 = 0.029
+    CALORIES_MEAN_SPEED_FIRST_MULTIPLIER = 0.035
+    CALORIES_MEAN_SPEED_SECOND_MULTIPLIER = 0.029
     HEIGHT_IN_M = 100.0
     KMH_IN_MS = 0.278  # * 1000m / 60min / 60sec = 0.27(7)
 
@@ -101,12 +101,12 @@ class SportsWalking(Training):
         """Расчёт затраченных каллорий при спортивной ходьбе."""
         return (
             (
-                self.CALORIES_MEAN_SPEED_MULTIPLIER_1 * self.weight
+                self.CALORIES_MEAN_SPEED_FIRST_MULTIPLIER * self.weight
                 + (
                     (self.get_mean_speed() * self.KMH_IN_MS)**2
                     / (self.height / self.HEIGHT_IN_M)
                 )
-                * self.CALORIES_MEAN_SPEED_MULTIPLIER_2
+                * self.CALORIES_MEAN_SPEED_SECOND_MULTIPLIER
                 * self.weight
             )
             * self.duration * self.H_IN_MIN
@@ -155,13 +155,15 @@ class Swimming(Training):
 def read_package(workout_type: str, data: List[float]) -> Training:
     """Прочитать полученные от датчиков данные."""
 
-    str_to_class_dict = {
+    types_of_trainings: Dict[str, Type[Training]] = {
         'SWM': Swimming,
         'RUN': Running,
         'WLK': SportsWalking
     }
-
-    return str_to_class_dict[workout_type](*data)
+    if workout_type not in types_of_trainings:
+        raise KeyError(f"Нет такой тренировки {workout_type}."
+                       f"Доступны: {list(types_of_trainings)}")
+    return types_of_trainings[workout_type](*data)
 
 
 def main(training: Training) -> None:
