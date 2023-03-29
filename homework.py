@@ -83,8 +83,8 @@ class Running(Training):
 class SportsWalking(Training):
     """Тренировка: спортивная ходьба."""
 
-    CALORIES_MEAN_SPEED_FIRST_MULTIPLIER = 0.035
-    CALORIES_MEAN_SPEED_SECOND_MULTIPLIER = 0.029
+    CALORIES_MEAN_SPEED_MULTIPLIER = 0.035
+    CALORIES_MEAN_SPEED_SHIFT = 0.029
     HEIGHT_IN_M = 100.0
     KMH_IN_MS = 0.278  # * 1000m / 60min / 60sec = 0.27(7)
 
@@ -101,12 +101,12 @@ class SportsWalking(Training):
         """Расчёт затраченных каллорий при спортивной ходьбе."""
         return (
             (
-                self.CALORIES_MEAN_SPEED_FIRST_MULTIPLIER * self.weight
+                self.CALORIES_MEAN_SPEED_MULTIPLIER * self.weight
                 + (
                     (self.get_mean_speed() * self.KMH_IN_MS)**2
                     / (self.height / self.HEIGHT_IN_M)
                 )
-                * self.CALORIES_MEAN_SPEED_SECOND_MULTIPLIER
+                * self.CALORIES_MEAN_SPEED_SHIFT
                 * self.weight
             )
             * self.duration * self.H_IN_MIN
