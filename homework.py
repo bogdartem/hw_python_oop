@@ -161,7 +161,7 @@ def read_package(workout_type: str, data: List[float]) -> Training:
         'WLK': SportsWalking
     }
     if workout_type not in types_of_trainings:
-        raise KeyError(f"Нет такой тренировки {workout_type}."
+        raise ValueError(f"Нет такой тренировки {workout_type}."
                        f"Доступны: {list(types_of_trainings)}")
     return types_of_trainings[workout_type](*data)
 
